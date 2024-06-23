@@ -1,0 +1,34 @@
+---
+- name: GIT clone
+  ansible.builtin.git:
+    repo: "git@github.com:philips-internal/MaaP_Implementation.git"
+    dest: "{{ repo_path }}"
+    version: "dev-main"
+    update: yes
+  register: git_clone_result
+  tags:
+    - git_clone
+
+- name: Debug Git Log
+  ansible.builtin.shell: "cd {{ repo_path }} && git diff --name-only HEAD HEAD~1"
+  register: git_log_output
+  changed_when: false
+
+- name: Parse modified files
+  set_fact:
+    modified_files_list: "{{ git_log_output.stdout_lines | map('basename') | unique }}"
+
+- name: Display modified files list
+  debug:
+    var: modified_files_list
+
+- name: Write modified_files_list to YAML file
+  ansible.builtin.copy:
+    content: |
+      modified_files_list:
+      {% for file in modified_files_list %}
+        - "{{ file }}"
+      {% endfor %}
+    dest: "{{ playbook_dir }}/roles/update_metricbeat_cfg/files/beats_cfg_update.yml"
+  tags:
+    - update_modified_files_list

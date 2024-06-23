@@ -1,0 +1,47 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+# Install sshpass to enable non-interactive password authentication
+- script: |
+    sudo apt-get update
+    sudo apt-get install -y sshpass
+  displayName: 'Install sshpass'
+
+- script: |
+    echo $(Build.SourcesDirectory)
+  displayName: 'Print Build.SourcesDirectory'
+
+- script: |
+    ls $(Build.SourcesDirectory)
+  displayName: 'Print Files in $(Build.SourcesDirectory)'
+
+- script: |
+    chmod 500 $(Build.SourcesDirectory)/PHL_MaaP_ASBL_01_Key_pvt1.pem
+  displayName: 'Give file permissions'
+
+- script: |
+    mkdir -p /home/vsts/.ssh
+    ssh-keyscan -H 1.1.1.1 >> /home/vsts/.ssh/known_hosts
+  displayName: 'Setup known_hosts file'
+
+# Set correct permissions and transfer the folder to the remote server
+- script: |
+    scp -v -i $(Build.SourcesDirectory)/PHL_MaaP_ASBL_01_Key_pvt1.pem -r $(Build.SourcesDirectory)/metricbeat_ansible ec2-user@1.1.1.1:/home/ec2-user/metricbeat_ansible
+    ssh -i $(Build.SourcesDirectory)/PHL_MaaP_ASBL_01_Key_pvt1.pem ec2-user@1.1.1.1 "
+      sudo rm -rf /home/ansibleuser/clone_git_repo/metricbeat_ansible && 
+      sudo mv /home/ec2-user/metricbeat_ansible/ /home/ansibleuser/clone_git_repo/ && 
+      sudo chown -R ansibleuser:ansibleuser /home/ansibleuser/clone_git_repo/ &&
+      sudo -u ansibleuser /home/ansibleuser/.local/bin/ansible-playbook /home/ansibleuser/clone_git_repo/metricbeat_ansible/metricbeat_cfg_update.yml -i /home/ansibleuser/clone_git_repo/metricbeat_ansible/inv"
+  displayName: 'Transfer files to remote server and run ansible-playbook'

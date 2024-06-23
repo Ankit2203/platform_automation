@@ -1,0 +1,13 @@
+---
+- name: Playbook to update Metricbeat configuration
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - /home/ansibleuser/clone_git_repo/metricbeat_ansible/git_vars.yml
+    - /home/ansibleuser/clone_git_repo/metricbeat_ansible/roles/update_metricbeat_cfg/files/beats_cfg_update.yml
+  roles:
+    - role: get_metricbeat_cfg
+      become: false  # Disable privilege escalation for this role
+
+    - role: update_metricbeat_cfg
+      become: true   # Enable privilege escalation for this role

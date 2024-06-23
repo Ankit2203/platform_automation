@@ -1,0 +1,24 @@
+- name: "Stop Metricbeat service if defined"
+  ansible.builtin.systemd:
+    name: "{{ beats_cfg_location_data[item]['service'] }}"
+    state: stopped
+  when: beats_cfg_location_data[item]['service'] is defined and beats_cfg_location_data[item]['service'] != ''
+  delegate_to: "{{ groups['beats_server'][(item_index | int) % groups['beats_server'] | length] }}"  # Adjusted delegate_to expression
+
+- name: "print source"
+  debug:
+    msg: "/home/ansibleuser/{{ beats_cfg_location_data[item]['src'] }}"
+
+- name: "Copy Metricbeat configuration file if defined"
+  ansible.builtin.copy:
+    src: "/home/ansibleuser/clone_git_repo/{{ beats_cfg_location_data[item]['src'] }}"
+    dest: "{{ beats_cfg_location_data[item]['dest'] }}"
+  when: beats_cfg_location_data[item]['src'] is defined and beats_cfg_location_data[item]['dest'] is defined
+  delegate_to: "{{ groups['beats_server'][(item_index | int) % groups['beats_server'] | length] }}"  # Adjusted delegate_to expression
+
+- name: "Start Metricbeat service if defined"
+  ansible.builtin.systemd:
+    name: "{{ beats_cfg_location_data[item]['service'] }}"
+    state: started
+  when: beats_cfg_location_data[item]['service'] is defined and beats_cfg_location_data[item]['service'] != ''
+  delegate_to: "{{ groups['beats_server'][(item_index | int) % groups['beats_server'] | length] }}"  # Adjusted delegate_to expression

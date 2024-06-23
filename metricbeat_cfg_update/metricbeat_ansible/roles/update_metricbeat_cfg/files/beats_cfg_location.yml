@@ -1,0 +1,12 @@
+metricbeat.yml:
+  dest: path/to/dest/metricbeat
+  src: path/to/source/metricbeat.yml
+  service: metricbeat.service
+metricbeat_MOM.yml:
+  dest: /etc/metricbeat
+  src: path/to/dest/metricbeat_MOM.yml
+  service: metricbeat_mom.service
+metricbeat_RDS.yml:
+  dest: /etc/metricbeat
+  src: path/to/dest/metricbeat_RDS.yml
+  service: metricbeat_rds.service
